@@ -2,6 +2,8 @@ package org.example.models.repository;
 
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.springframework.stereotype.Repository;
+import org.example.utils.BDUtils;
+import javax.persistence.EntityManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.List;
 @Repository
 public class RepositoryFuenteEstatica {
     private final List<FuenteEstatica> fuentes = new ArrayList<>();
+
 
     public FuenteEstatica findByRuta(String ruta) {
         for (FuenteEstatica fuente : fuentes) {
