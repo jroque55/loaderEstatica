@@ -81,7 +81,7 @@ public class LectorCSV implements ILector {
         }
         return hechos;
     }
-    //TODO: Pasar responsabilidad a el repo de hechos?
+
     private Hecho encontrarRepetido(String titulo, List<Hecho> hechos) {
         // para cada elemento de hechos ":" es un for each
         for (Hecho h : hechos) {
@@ -108,7 +108,6 @@ public class LectorCSV implements ILector {
         hecho.setFecha(LocalDate.parse(datos[5]));
     }
 
-    //TODO: pasar responsabilidad a hechos
     private Hecho crearHecho(List<Hecho> hechos, String[] datos) {
         Categoria categoria = encontrarCategoriaRepetido(hechos, datos[2]); //, aqui deberiamos buscar la categoria o crearla en caso de no existir
         Ubicacion ubicacion = new Ubicacion ((parseFloat(datos[3])), parseFloat(datos[4]));
