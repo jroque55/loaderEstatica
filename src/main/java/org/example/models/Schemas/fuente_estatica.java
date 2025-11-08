@@ -1,7 +1,11 @@
 package org.example.models.Schemas;
 import javax.persistence.*;
+
+import lombok.Data;
+import org.example.models.entities.fuenteEstatica.TipoFuente;
 import org.example.utils.EstadoProcesado;
 
+@Data
 @Entity
 public class fuente_estatica {
 
@@ -12,10 +16,6 @@ public class fuente_estatica {
     @Enumerated(EnumType.STRING)
     private EstadoProcesado estadoProcesado;
 
-    public String getRuta() { return ruta; }
-    public void setRuta(String ruta) { this.ruta = ruta; }
-
-    public EstadoProcesado getEstadoProcesado() { return estadoProcesado; }
-    public void setEstadoProcesado(EstadoProcesado estadoProcesado) { this.estadoProcesado = estadoProcesado; }
-
+    @Enumerated(EnumType.STRING)
+    private TipoFuente tipoFuente = TipoFuente.ESTATICA;
 }

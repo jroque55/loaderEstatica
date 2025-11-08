@@ -1,8 +1,6 @@
 package org.example.models.entities.hecho;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
 public class Ubicacion {

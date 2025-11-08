@@ -1,11 +1,10 @@
 package org.example.controller;
 
+import org.example.models.Schemas.fuente_estatica;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.hecho.Hecho;
-import org.example.service.ServiceHecho;
-import org.example.models.dtos.HechoDto;
+import org.example.service.ServiceFuenteEstatica;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,30 +15,24 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/estatica")
-public class ControllerHecho {
+public class ControllerFuenteEstatica {
 
-    @Value("${app.urlFile}")
-    private String urlFile;
     @Autowired
-    private ServiceHecho serviceHecho;
+    private final ServiceFuenteEstatica serviceEstatica;
 
-    public ControllerHecho(ServiceHecho serviceHecho) {
-        this.serviceHecho = serviceHecho;
-    }
-
-    public void setUrlFile(String ruta) {
-        this.urlFile = ruta;
+    public ControllerFuenteEstatica(ServiceFuenteEstatica serviceEstatica) {
+        this.serviceEstatica = serviceEstatica;
     }
 
     @GetMapping("/fuentes")
-    public ResponseEntity<List<FuenteEstatica>> findByLeidas() {
-        List<FuenteEstatica> fe = this.serviceHecho.findByLeidas();
+    public ResponseEntity<List<fuente_estatica>> findByLeidas() {
+        List<fuente_estatica> fe = this.serviceEstatica.findByLeidas();
         return ResponseEntity.status(200).body(fe);
     }
 
     @GetMapping("/{ruta}")
     public ResponseEntity<List<Hecho>> getHechosRuta(@PathVariable String ruta) {
-        List<Hecho> hechos = this.serviceHecho.leerDataSet(this.urlFile + "/" + ruta);
+        List<Hecho> hechos = this.serviceEstatica.leerDataSet(ruta);
         return ResponseEntity.status(200).body(hechos);
     }
 }

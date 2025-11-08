@@ -6,8 +6,6 @@ import org.springframework.stereotype.Repository;
 import org.example.utils.BDUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -32,10 +30,10 @@ public class RepositoryFuenteEstatica {
         }
     }
 
-    public List<FuenteEstatica> findByLeidas() {
+    public List<fuente_estatica> findByLeidas() {
         try{
-            List<fuente_estatica> lfes = em.createQuery("SELECT f FROM fuente_estatica f where f.estadoProcesado = PROCESADO", fuente_estatica.class).getResultList();
-            return fromDTOs(lfes);
+            List<fuente_estatica> lfes = em.createQuery("SELECT f FROM fuente_estatica f where f.estadoProcesado = 'PROCESADO'", fuente_estatica.class).getResultList();
+            return lfes;
         } catch(NoResultException e) {
             return null;
         }
@@ -45,18 +43,10 @@ public class RepositoryFuenteEstatica {
         return new FuenteEstatica(fes.getRuta(),fes.getEstadoProcesado());
     }
 
-    public List<FuenteEstatica> fromDTOs(List<fuente_estatica> lfes) {
-        List<FuenteEstatica> lfe = new ArrayList<>();
-        for(fuente_estatica fes : lfes){
-            lfe.add(fromDTO(fes));
-        }
-        return lfe;
-    }
-
     public fuente_estatica toDTO(FuenteEstatica fuente) {
         fuente_estatica fes = new fuente_estatica();
         fes.setRuta(fuente.getRutaDataset());
-        fes.setEstadoProcesado(fuente.getEstado());
+        fes.setEstadoProcesado(fuente.getEstadoProcesado());
         return fes;
     }
 

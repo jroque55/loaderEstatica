@@ -1,21 +1,21 @@
 package org.example.models.entities.fuenteEstatica;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.example.models.entities.hecho.Hecho;
 import org.example.utils.EstadoProcesado;
-
 import java.util.List;
 
+@Getter
+@Setter
 public class FuenteEstatica extends Fuente {
     public String rutaDataset;
     public ILector lector;
     public EstadoProcesado estadoProcesado;
-    private final TipoFuente tipoFuente;
 
     public FuenteEstatica(String rutaDataset, EstadoProcesado estado) {
-        this.rutaDataset = rutaDataset;
-        this.estadoProcesado = estado;
+        super(rutaDataset, TipoFuente.ESTATICA);
         this.lector = seleccionarLector(rutaDataset);
-        this.tipoFuente = TipoFuente.ESTATICA;
     }
 
     private ILector seleccionarLector(String ruta) {
@@ -28,22 +28,11 @@ public class FuenteEstatica extends Fuente {
     }
 
     @Override
-    public  List<Hecho> obtenerHechos() {
-        List<Hecho> hechos = lector.obtencionHechos(this.rutaDataset);
-        this.setEstado(EstadoProcesado.PROCESADO);
+    public  List<Hecho> obtenerHechos(String rutaBase) {
+        List<Hecho> hechos = lector.obtencionHechos(rutaBase + '/' +this.rutaDataset);
+        this.setEstadoProcesado(EstadoProcesado.PROCESADO);
         return hechos;
     };
 
-    public void setEstado(EstadoProcesado estado) {
-        this.estadoProcesado = estado;
-    }
-
-    public EstadoProcesado getEstado() {
-        return estadoProcesado;
-    }
-
-    public String getRutaDataset(){
-        return rutaDataset;
-    }
 
 }

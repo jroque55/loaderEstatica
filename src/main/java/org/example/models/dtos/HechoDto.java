@@ -14,6 +14,6 @@ public class HechoDto {
     private Categoria categoria;
     private LocalDate fecha;
     private Ubicacion lugarDeOcurrencia;
-    private Fuente origen;
+    private FuenteDto origen;
 
 }
