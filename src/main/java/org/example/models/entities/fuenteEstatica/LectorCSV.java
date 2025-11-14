@@ -1,5 +1,7 @@
 package org.example.models.entities.fuenteEstatica;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
@@ -7,17 +9,25 @@ import org.example.models.dtos.FuenteDto;
 import org.example.models.entities.hecho.*;
 import java.time.format.DateTimeFormatter;
 import com.opencsv.CSVReader;
-import java.io.FileReader;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import java.io.FileReader;
+@Component
 public class LectorCSV implements ILector {
+
+    @Value("${app.urlFile}")
+    private String urlFile;
+    private static final Logger logger = LoggerFactory.getLogger(LectorCSV.class);
 
     @Override
     public List<Hecho> obtencionHechos(String ruta) {
         List<Hecho> hechos = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        FuenteDto fuente = new FuenteDto(ruta, TipoFuente.ESTATICA) {;
-        };
-        try (CSVReader reader = new CSVReader(new FileReader(ruta))) {
+        FuenteDto fuente = new FuenteDto(ruta, TipoFuente.ESTATICA);
+        fuente.obtenerNombre();
+        logger.info(fuente.getNombre());
+        try (CSVReader reader = new CSVReader(new FileReader(this.urlFile + '/'+ ruta))) {
             String[] line;
             reader.readNext();
             while ((line = reader.readNext()) != null) {

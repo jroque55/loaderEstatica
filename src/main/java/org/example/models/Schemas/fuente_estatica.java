@@ -12,10 +12,9 @@ public class fuente_estatica {
     @Id
     @Column(unique = true)
     private String ruta;
-
+    private String nombre;
     @Enumerated(EnumType.STRING)
     private EstadoProcesado estadoProcesado;
-
     @Enumerated(EnumType.STRING)
     private TipoFuente tipoFuente = TipoFuente.ESTATICA;
 }

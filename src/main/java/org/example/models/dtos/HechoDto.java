@@ -1,6 +1,5 @@
 package org.example.models.dtos;
 
-import org.example.models.entities.fuenteEstatica.Fuente;
 import org.example.models.entities.hecho.Categoria;
 import org.example.models.entities.hecho.Ubicacion;
 import lombok.Data;

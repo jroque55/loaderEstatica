@@ -13,6 +13,9 @@ public class RepositoryFuenteEstatica {
     private final EntityManager em = BDUtils.getEntityManager();
 
     public void save(FuenteEstatica fuente) {
+        if (fuente.getRutaDataset() == null || fuente.getRutaDataset().isEmpty()) {
+            throw new IllegalArgumentException("La Ruta (ID) no puede ser nula al intentar guardar la entidad.");
+        }
         fuente_estatica fes = toDTO(fuente);
         em.getTransaction().begin();
         em.persist(fes);
@@ -40,11 +43,12 @@ public class RepositoryFuenteEstatica {
     }
 
     public FuenteEstatica fromDTO(fuente_estatica fes) {
-        return new FuenteEstatica(fes.getRuta(),fes.getEstadoProcesado());
+        return new FuenteEstatica(fes.getRuta());
     }
 
     public fuente_estatica toDTO(FuenteEstatica fuente) {
         fuente_estatica fes = new fuente_estatica();
+        fes.setNombre(fuente.getNombre());
         fes.setRuta(fuente.getRutaDataset());
         fes.setEstadoProcesado(fuente.getEstadoProcesado());
         return fes;

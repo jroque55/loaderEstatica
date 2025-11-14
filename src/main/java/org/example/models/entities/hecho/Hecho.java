@@ -2,7 +2,6 @@ package org.example.models.entities.hecho;
 
 
 import org.example.models.dtos.FuenteDto;
-import org.example.models.entities.fuenteEstatica.Fuente;
 import lombok.Data;
 
 import java.time.LocalDate;
