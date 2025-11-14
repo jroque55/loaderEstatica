@@ -10,8 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.lang.String;
+import java.util.stream.Stream;
 
 @Service
 public class ServiceFuenteEstatica {
@@ -41,8 +45,6 @@ public class ServiceFuenteEstatica {
         }
     }
 
-
-
     public FuenteEstatica findByRuta(String ruta) {
         FuenteEstatica fe = repositorioFuenteEstatica.findByRuta(ruta);
         if(fe != null){
@@ -54,5 +56,7 @@ public class ServiceFuenteEstatica {
     public List<fuente_estatica> findByLeidas() {
         return this.repositorioFuenteEstatica.findByLeidas();
     }
+
+
 
 }

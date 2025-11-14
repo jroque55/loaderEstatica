@@ -31,6 +31,9 @@ public class LectorCSV implements ILector {
             String[] line;
             reader.readNext();
             while ((line = reader.readNext()) != null) {
+                if(esRepetido(line[0],hechos)){
+                    continue;
+                }
                 float lat = Float.parseFloat(line[3].trim());
                 float lon = Float.parseFloat(line[4].trim());
                 LocalDate fecha = LocalDate.parse(line[5].trim(), formatter);
@@ -52,6 +55,10 @@ public class LectorCSV implements ILector {
             }
         }
         return new Categoria(cate);
+    }
+
+    private Boolean esRepetido(String titulo, List<Hecho> hechos){
+        return hechos.stream().anyMatch(h -> h.getTitulo().equalsIgnoreCase(titulo));
     }
 
 }
