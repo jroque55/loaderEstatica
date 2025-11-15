@@ -8,9 +8,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.example.utils.BDUtils;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.persistence.EntityManager;
 
+@EnableScheduling
 @SpringBootApplication
 @EntityScan(basePackages = "org.example.models.Schemas")
 public class Main {
@@ -22,6 +24,11 @@ public class Main {
         RepositoryFuenteEstatica repo = context.getBean(RepositoryFuenteEstatica.class);
         ControllerFuenteEstatica control = context.getBean(ControllerFuenteEstatica.class);
         ServiceFuenteEstatica serv = context.getBean(ServiceFuenteEstatica.class);
+
+        serv.buscarNuevasFuentes();
+
         BDUtils.commit(em);
+
+
     }
 }

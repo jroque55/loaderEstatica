@@ -2,6 +2,7 @@ package org.example.models.repository;
 
 import org.example.models.Schemas.fuente_estatica;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
+import org.example.utils.EstadoProcesado;
 import org.springframework.stereotype.Repository;
 import org.example.utils.BDUtils;
 import javax.persistence.EntityManager;
@@ -29,6 +30,25 @@ public class RepositoryFuenteEstatica {
                     .getSingleResult();
             return fromDTO(fe);
         } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    public void update(FuenteEstatica fuente) {
+        fuente_estatica fes = em.createQuery("FROM fuente_estatica f WHERE f.ruta = :ruta", fuente_estatica.class)
+                .setParameter("ruta", fuente.getRutaDataset())
+                .getSingleResult();
+        fes.setEstadoProcesado(EstadoProcesado.PROCESADO);
+        em.getTransaction().begin();
+        em.merge(fes);
+        em.getTransaction().commit();
+    }
+
+    public List<fuente_estatica> findByNoLeidas() {
+        try{
+            List<fuente_estatica> lfes = em.createQuery("SELECT f FROM fuente_estatica f where f.estadoProcesado = 'NO_PROCESADO'", fuente_estatica.class).getResultList();
+            return lfes;
+        } catch(NoResultException e) {
             return null;
         }
     }
