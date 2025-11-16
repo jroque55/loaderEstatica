@@ -1,33 +1,39 @@
 package org.example.models.entities.fuenteEstatica;
 
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.models.entities.hecho.Hecho;
 import org.example.utils.EstadoProcesado;
-import org.example.models.entities.fuenteEstatica.TipoFuente;
-import java.util.List;
 
 @Getter
 @Setter
+@Entity
+@NoArgsConstructor
 public class FuenteEstatica {
-    public String nombre;
+
+    @Id
+    @Column(unique = true)
     public String rutaDataset;
+    public String nombre;
+    @Transient
     public ILector lector;
+    @Enumerated(EnumType.STRING)
     public EstadoProcesado estadoProcesado;
+    @Enumerated(EnumType.STRING)
+    private TipoFuente tipoFuente = TipoFuente.ESTATICA;
 
     public FuenteEstatica(String rutaDataset) {
         this.rutaDataset = rutaDataset;
         this.nombre = this.rutaDataset.substring(0, rutaDataset.length() - 4);
         this.estadoProcesado = EstadoProcesado.NO_PROCESADO;
-        this.lector = seleccionarLector(rutaDataset);
     }
 
-    private ILector seleccionarLector(String ruta) {
-        if (ruta.endsWith(".csv")) {
-            return new LectorCSV();
-        } if(ruta.endsWith(".pdf")){
-            return new LectorPDF();
+    public void seleccionarLector() {
+        if (rutaDataset.endsWith(".csv")) {
+            this.lector = new LectorCSV();
+        } if(rutaDataset.endsWith(".pdf")){
+            this.lector =  new LectorPDF();
         }
-        return null;
     }
 }

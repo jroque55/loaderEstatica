@@ -1,16 +1,19 @@
 package org.example.service;
 
-import org.example.models.Schemas.fuente_estatica;
+
+import org.example.models.entities.fuente.Fuente;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.fuenteEstatica.LectorCSV;
 import org.example.models.entities.hecho.Hecho;
-import org.example.models.repository.RepositoryFuenteEstatica;
+import org.example.models.repository.repoAgregador.IRepositoryAgregador;
+import org.example.models.repository.repoFuenteEstatica.IRepositoryFuenteEstatica;
+import org.example.utils.EnumTipoFuente;
 import org.example.utils.EstadoProcesado;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,31 +28,33 @@ public class ServiceFuenteEstatica {
     @Value("${app.urlFile}")
     private String urlFile;
     private final LectorCSV lectorCSV;
-    private final RepositoryFuenteEstatica repositorioFuenteEstatica;
+    private IRepositoryFuenteEstatica repositoryFuenteEstatica;
+    private IRepositoryAgregador repositoryAgregador;
 
-    public ServiceFuenteEstatica(RepositoryFuenteEstatica repo, LectorCSV lectorCSV) {
-        this.repositorioFuenteEstatica = repo;
+    public ServiceFuenteEstatica(LectorCSV lectorCSV, IRepositoryFuenteEstatica repositoryFuenteEstatica, IRepositoryAgregador repositoryAgregador) {
         this.lectorCSV = lectorCSV;
+        this.repositoryFuenteEstatica = repositoryFuenteEstatica;
+        this.repositoryAgregador = repositoryAgregador;
     }
 
     @Transactional
     public List<Hecho> leerDataSet(String ruta) {
-        FuenteEstatica fuente = this.findByRuta(ruta);
+        FuenteEstatica fuente = this.repositoryFuenteEstatica.findByRutaDataset(ruta);
         if(fuente == null) {
             throw new RuntimeException("No se encontro la fuente estatica con la ruta: " + ruta);
         } else {
             if(fuente.getEstadoProcesado() == EstadoProcesado.PROCESADO) {
-                return lectorCSV.obtencionHechos(ruta);
+                throw new RuntimeException("La fuente estatica con la ruta: " + ruta + " ya fue procesada anteriormente.");
             }
-            fuente = new FuenteEstatica(ruta);
-            List<Hecho> hechos = lectorCSV.obtencionHechos(ruta);
+            fuente.seleccionarLector();
+            List<Hecho> hechos = fuente.getLector().obtencionHechos(ruta);
             fuente.setEstadoProcesado(EstadoProcesado.PROCESADO);
-            repositorioFuenteEstatica.update(fuente);
             return hechos;
         }
     }
 
     @Scheduled(fixedRate = 360000)
+    @Transactional
     public void buscarNuevasFuentes(){
         Path dirPath = Paths.get(this.urlFile);
         if (!Files.isDirectory(dirPath)) {
@@ -61,11 +66,11 @@ public class ServiceFuenteEstatica {
             List<String> archivos = stream.filter(Files::isRegularFile)
                     .map(Path::getFileName).map(Path::toString).toList();
             for(String archivo : archivos){
-                FuenteEstatica fe = this.findByRuta(archivo);
-                if(fe == null){
+                FuenteEstatica fe = this.repositoryFuenteEstatica.findByRutaDataset(archivo);
+                if(fe == null) {
                     fe = new FuenteEstatica(archivo);
                     fe.setEstadoProcesado(EstadoProcesado.NO_PROCESADO);
-                    repositorioFuenteEstatica.save(fe);
+                    repositoryFuenteEstatica.save(fe);
                     System.out.println("Nueva fuente estatica agregada: " + archivo);
                 }
             }
@@ -75,21 +80,29 @@ public class ServiceFuenteEstatica {
         }
     }
 
-    public FuenteEstatica findByRuta(String ruta) {
-        FuenteEstatica fe = repositorioFuenteEstatica.findByRuta(ruta);
-        if(fe != null){
-            return fe;
+    public List<FuenteEstatica> findByLeidas() {
+        return this.repositoryFuenteEstatica.findByEstadoProcesado(EstadoProcesado.PROCESADO);
+    }
+
+    public List<FuenteEstatica> findByNoLeidas() {
+        return this.repositoryFuenteEstatica.findByEstadoProcesado(EstadoProcesado.NO_PROCESADO);
+    }
+
+
+    @Transactional
+    @Scheduled(fixedRate = 10000000)
+    public void subirFuentesAlAgregador() {
+        List<FuenteEstatica> fuentesNoLeidas = this.findByNoLeidas();
+        if(fuentesNoLeidas == null || fuentesNoLeidas.isEmpty()) {
+            throw new RuntimeException("No hay fuentes no leidas para subir al agregador.");
         }
-        return null;
+        for (FuenteEstatica fuente : fuentesNoLeidas) {
+            Fuente f = new Fuente();
+            f.setNombre(fuente.getNombre());
+            f.setTipoFuente(EnumTipoFuente.ESTATICA);
+            f.setUrl(fuente.getRutaDataset());
+            this.repositoryAgregador.save(f);
+        }
     }
-
-    public List<fuente_estatica> findByLeidas() {
-        return this.repositorioFuenteEstatica.findByLeidas();
-    }
-
-    public List<fuente_estatica> findByNoLeidas() {
-        return this.repositorioFuenteEstatica.findByNoLeidas();
-    }
-
 
 }
