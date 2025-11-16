@@ -35,6 +35,13 @@ public class ControllerFuenteEstatica {
         return ResponseEntity.status(200).body(hechos);
     }
 
+    @GetMapping("/hechos")
+    public ResponseEntity<List<Hecho>> getHechosNoLeidos() {
+        List<Hecho> hechos = this.serviceEstatica.leerDataSetNoLeidos();
+        return ResponseEntity.status(200).body(hechos);
+    }
+
+
     @GetMapping("/fuentes/noleidas")
     public ResponseEntity<List<FuenteEstatica>> findByNoLeidas() {
         List<FuenteEstatica> fe = this.serviceEstatica.findByNoLeidas();

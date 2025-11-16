@@ -4,6 +4,7 @@ package org.example.service;
 import org.example.models.entities.fuente.Fuente;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.fuenteEstatica.LectorCSV;
+import org.example.models.entities.fuenteEstatica.LectorPDF;
 import org.example.models.entities.hecho.Hecho;
 import org.example.models.repository.repoAgregador.IRepositoryAgregador;
 import org.example.models.repository.repoFuenteEstatica.IRepositoryFuenteEstatica;
@@ -17,6 +18,7 @@ import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.lang.String;
 import java.util.stream.Stream;
@@ -38,6 +40,15 @@ public class ServiceFuenteEstatica {
     }
 
     @Transactional
+    public List<Hecho> leerDataSet(FuenteEstatica fuenteEstatica){
+        seleccionarLectorAFuente(fuenteEstatica);
+        List<Hecho> hechos = fuenteEstatica.obtenerHechos();
+        fuenteEstatica.setEstadoProcesado(EstadoProcesado.PROCESADO);
+        return hechos;
+    }
+
+
+    @Transactional
     public List<Hecho> leerDataSet(String ruta) {
         FuenteEstatica fuente = this.repositoryFuenteEstatica.findByRutaDataset(ruta);
         if(fuente == null) {
@@ -46,8 +57,8 @@ public class ServiceFuenteEstatica {
             if(fuente.getEstadoProcesado() == EstadoProcesado.PROCESADO) {
                 throw new RuntimeException("La fuente estatica con la ruta: " + ruta + " ya fue procesada anteriormente.");
             }
-            fuente.seleccionarLector();
-            List<Hecho> hechos = fuente.getLector().obtencionHechos(ruta);
+            seleccionarLectorAFuente(fuente);
+            List<Hecho> hechos = fuente.obtenerHechos();
             fuente.setEstadoProcesado(EstadoProcesado.PROCESADO);
             return hechos;
         }
@@ -88,6 +99,20 @@ public class ServiceFuenteEstatica {
         return this.repositoryFuenteEstatica.findByEstadoProcesado(EstadoProcesado.NO_PROCESADO);
     }
 
+    @Transactional
+    public List<Hecho> leerDataSetNoLeidos() {
+        List<FuenteEstatica> fuentesNoLeidas = this.findByNoLeidas();
+        if(fuentesNoLeidas == null || fuentesNoLeidas.isEmpty()) {
+            throw new RuntimeException("No hay fuentes no leidas.");
+        }
+        List<Hecho> hechosTotales = new ArrayList<>();
+        for (FuenteEstatica fuente : fuentesNoLeidas) {
+            System.out.println("Leyendo fuente no leida: " + fuente.getRutaDataset());
+            List<Hecho> hechos = this.leerDataSet(fuente);
+            hechosTotales.addAll(hechos);
+        }
+        return hechosTotales;
+    }
 
     @Transactional
     @Scheduled(fixedRate = 10000000)
@@ -102,6 +127,14 @@ public class ServiceFuenteEstatica {
             f.setTipoFuente(EnumTipoFuente.ESTATICA);
             f.setUrl(fuente.getRutaDataset());
             this.repositoryAgregador.save(f);
+        }
+    }
+
+    public void seleccionarLectorAFuente(FuenteEstatica fuente) {
+        if (fuente.getRutaDataset().endsWith(".csv")) {
+            fuente.lector = this.lectorCSV;
+        } if(fuente.getRutaDataset().endsWith(".pdf")){
+            //fuente.lector =  new LectorPDF();
         }
     }
 

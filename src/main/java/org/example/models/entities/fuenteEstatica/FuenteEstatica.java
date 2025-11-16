@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.models.entities.hecho.Hecho;
 import org.example.utils.EstadoProcesado;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -29,11 +32,8 @@ public class FuenteEstatica {
         this.estadoProcesado = EstadoProcesado.NO_PROCESADO;
     }
 
-    public void seleccionarLector() {
-        if (rutaDataset.endsWith(".csv")) {
-            this.lector = new LectorCSV();
-        } if(rutaDataset.endsWith(".pdf")){
-            this.lector =  new LectorPDF();
-        }
+    public List<Hecho> obtenerHechos() {
+        return lector.obtencionHechos(this.rutaDataset);
     }
+
 }
