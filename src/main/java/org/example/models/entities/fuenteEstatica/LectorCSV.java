@@ -43,7 +43,8 @@ public class LectorCSV implements ILector {
                 hechos.add(hecho);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Fallo al leer el archivo CSV en la ruta: {}", ruta, e);
+            throw new RuntimeException("Error en la lectura del archivo: " + ruta, e);
         }
         return hechos;
     }

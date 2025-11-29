@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import jakarta.websocket.server.PathParam;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.hecho.Hecho;
 import org.example.service.ServiceFuenteEstatica;
@@ -36,8 +37,8 @@ public class ControllerFuenteEstatica {
     }
 
     @GetMapping("/hechos")
-    public ResponseEntity<List<Hecho>> getHechosNoLeidos() {
-        List<Hecho> hechos = this.serviceEstatica.leerDataSetNoLeidos();
+    public ResponseEntity<List<List<Hecho>>> getHechosNoLeidos() {
+        List<List<Hecho>> hechos = this.serviceEstatica.leerDataSetNoLeidos();
         return ResponseEntity.status(200).body(hechos);
     }
 

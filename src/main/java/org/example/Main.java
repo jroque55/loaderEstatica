@@ -20,7 +20,5 @@ public class Main {
         ControllerFuenteEstatica control = context.getBean(ControllerFuenteEstatica.class);
         IRepositoryAgregador repoAgregador = context.getBean(IRepositoryAgregador.class);
         ServiceFuenteEstatica serv = context.getBean(ServiceFuenteEstatica.class);
-
-        serv.subirFuentesAlAgregador();
     }
 }

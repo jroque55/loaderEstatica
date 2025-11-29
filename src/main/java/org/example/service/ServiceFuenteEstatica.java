@@ -60,11 +60,12 @@ public class ServiceFuenteEstatica {
             seleccionarLectorAFuente(fuente);
             List<Hecho> hechos = fuente.obtenerHechos();
             fuente.setEstadoProcesado(EstadoProcesado.PROCESADO);
+            this.repositoryFuenteEstatica.save(fuente);
             return hechos;
         }
     }
 
-    @Scheduled(fixedRate = 360000)
+    @Scheduled(fixedRate = 3600000)
     @Transactional
     public void buscarNuevasFuentes(){
         Path dirPath = Paths.get(this.urlFile);
@@ -100,16 +101,16 @@ public class ServiceFuenteEstatica {
     }
 
     @Transactional
-    public List<Hecho> leerDataSetNoLeidos() {
+    public List<List<Hecho>> leerDataSetNoLeidos() {
         List<FuenteEstatica> fuentesNoLeidas = this.findByNoLeidas();
         if(fuentesNoLeidas == null || fuentesNoLeidas.isEmpty()) {
             throw new RuntimeException("No hay fuentes no leidas.");
         }
-        List<Hecho> hechosTotales = new ArrayList<>();
+        List<List<Hecho>> hechosTotales = new ArrayList<>();
         for (FuenteEstatica fuente : fuentesNoLeidas) {
             System.out.println("Leyendo fuente no leida: " + fuente.getRutaDataset());
             List<Hecho> hechos = this.leerDataSet(fuente);
-            hechosTotales.addAll(hechos);
+            hechosTotales.add(hechos);
         }
         return hechosTotales;
     }
@@ -122,11 +123,18 @@ public class ServiceFuenteEstatica {
             throw new RuntimeException("No hay fuentes no leidas para subir al agregador.");
         }
         for (FuenteEstatica fuente : fuentesNoLeidas) {
-            Fuente f = new Fuente();
-            f.setNombre(fuente.getNombre());
-            f.setTipoFuente(EnumTipoFuente.ESTATICA);
-            f.setUrl(fuente.getRutaDataset());
-            this.repositoryAgregador.save(f);
+            //TODO: Chequear que no se suba siempre al agregador si ya existe
+            Fuente esNueva = this.repositoryAgregador.findByUrl(fuente.getRutaDataset());
+            if(esNueva == null) {
+                Fuente f = new Fuente();
+                f.setNombre(fuente.getNombre());
+                f.setTipoFuente(EnumTipoFuente.ESTATICA);
+                f.setUrl(fuente.getRutaDataset());
+                System.out.println("Nueva fuente: " + f.getUrl() );
+                this.repositoryAgregador.save(f);
+            }else {
+                System.out.println("Fuente existe, no se agrego: "+ esNueva.getUrl() );
+            }
         }
     }
 
