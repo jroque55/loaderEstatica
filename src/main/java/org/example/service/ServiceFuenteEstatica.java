@@ -116,6 +116,17 @@ public class ServiceFuenteEstatica {
     }
 
     @Transactional
+    public void reprocesarFuente(String ruta) {
+        FuenteEstatica fuente = this.repositoryFuenteEstatica.findByRutaDataset(ruta);
+        if(fuente == null){
+            throw new RuntimeException("No se encontro la fuente estatica con la ruta: " + ruta);
+        }
+        fuente.setEstadoProcesado(EstadoProcesado.NO_PROCESADO);
+        this.repositoryFuenteEstatica.save(fuente);
+        System.out.println("La ruta se marco como no procesada: " + ruta);
+    }
+
+    @Transactional
     @Scheduled(fixedRate = 10000000)
     public void subirFuentesAlAgregador() {
         List<FuenteEstatica> fuentesNoLeidas = this.findByNoLeidas();
@@ -123,7 +134,6 @@ public class ServiceFuenteEstatica {
             throw new RuntimeException("No hay fuentes no leidas para subir al agregador.");
         }
         for (FuenteEstatica fuente : fuentesNoLeidas) {
-            //TODO: Chequear que no se suba siempre al agregador si ya existe
             Fuente esNueva = this.repositoryAgregador.findByUrl(fuente.getRutaDataset());
             if(esNueva == null) {
                 Fuente f = new Fuente();
