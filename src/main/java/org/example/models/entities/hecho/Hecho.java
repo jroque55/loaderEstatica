@@ -12,15 +12,21 @@ public class Hecho {
     private String descripcion;
     private Categoria categoria;
     private LocalDate fecha;
-    private Ubicacion lugarDeOcurrencia;
+    private Float latitud;
+    private Float longitud;
     private FuenteDto fuente;
 
-    public Hecho(String titulo, String descripcion, Categoria categoria,Ubicacion lugarDeOcurrencia, LocalDate fecha, FuenteDto fuente) {
+    public Hecho(String titulo, String descripcion, Categoria categoria,Float latitud, Float longitud, LocalDate fecha, FuenteDto fuente) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.categoria = categoria;
-        this.lugarDeOcurrencia = lugarDeOcurrencia;
+        this.latitud = latitud;
+        this.longitud = longitud;
         this.fecha = fecha;
         this.fuente = fuente;
+    }
+
+    public Hecho() {
+
     }
 }

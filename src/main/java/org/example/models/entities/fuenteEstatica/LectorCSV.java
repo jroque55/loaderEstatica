@@ -18,7 +18,6 @@ public class LectorCSV implements ILector {
 
     @Value("${app.urlFile}")
     private String urlFile;
-    private static final Logger logger = LoggerFactory.getLogger(LectorCSV.class);
 
     @Override
     public List<Hecho> obtencionHechos(String ruta) {
@@ -26,7 +25,6 @@ public class LectorCSV implements ILector {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         FuenteDto fuente = new FuenteDto(ruta, TipoFuente.ESTATICA);
         fuente.obtenerNombre();
-        logger.info(fuente.getNombre());
         try (CSVReader reader = new CSVReader(new FileReader(this.urlFile + '/'+ ruta))) {
             String[] line;
             reader.readNext();
@@ -38,12 +36,10 @@ public class LectorCSV implements ILector {
                 float lon = Float.parseFloat(line[4].trim());
                 LocalDate fecha = LocalDate.parse(line[5].trim(), formatter);
                 Categoria categoria = encontrarCategoriaRepetido(hechos, line[2].trim());
-                Ubicacion ubicacion = new Ubicacion(lat, lon);
-                Hecho hecho = new Hecho(line[0].trim(), line[1].trim(), categoria, ubicacion, fecha,fuente);
+                Hecho hecho = new Hecho(line[0].trim(), line[1].trim(), categoria, lat, lon, fecha,fuente);
                 hechos.add(hecho);
             }
         } catch (Exception e) {
-            logger.error("Fallo al leer el archivo CSV en la ruta: {}", ruta, e);
             throw new RuntimeException("Error en la lectura del archivo: " + ruta, e);
         }
         return hechos;

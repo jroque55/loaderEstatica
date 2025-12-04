@@ -7,6 +7,5 @@ public class Categoria {
         this.nombre = nombre;
     }
     public String getNombre(){return nombre;}
-    public void setNombre(String dato) {nombre = dato;}
 }
 

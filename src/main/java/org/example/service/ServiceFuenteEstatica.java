@@ -1,10 +1,8 @@
 package org.example.service;
 
-
 import org.example.models.entities.fuente.Fuente;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.fuenteEstatica.LectorCSV;
-import org.example.models.entities.fuenteEstatica.LectorPDF;
 import org.example.models.entities.hecho.Hecho;
 import org.example.models.repository.repoAgregador.IRepositoryAgregador;
 import org.example.models.repository.repoFuenteEstatica.IRepositoryFuenteEstatica;
@@ -44,25 +42,8 @@ public class ServiceFuenteEstatica {
         seleccionarLectorAFuente(fuenteEstatica);
         List<Hecho> hechos = fuenteEstatica.obtenerHechos();
         fuenteEstatica.setEstadoProcesado(EstadoProcesado.PROCESADO);
+        this.repositoryFuenteEstatica.save(fuenteEstatica);
         return hechos;
-    }
-
-
-    @Transactional
-    public List<Hecho> leerDataSet(String ruta) {
-        FuenteEstatica fuente = this.repositoryFuenteEstatica.findByRutaDataset(ruta);
-        if(fuente == null) {
-            throw new RuntimeException("No se encontro la fuente estatica con la ruta: " + ruta);
-        } else {
-            if(fuente.getEstadoProcesado() == EstadoProcesado.PROCESADO) {
-                throw new RuntimeException("La fuente estatica con la ruta: " + ruta + " ya fue procesada anteriormente.");
-            }
-            seleccionarLectorAFuente(fuente);
-            List<Hecho> hechos = fuente.obtenerHechos();
-            fuente.setEstadoProcesado(EstadoProcesado.PROCESADO);
-            this.repositoryFuenteEstatica.save(fuente);
-            return hechos;
-        }
     }
 
     @Scheduled(fixedRate = 3600000)
@@ -104,7 +85,7 @@ public class ServiceFuenteEstatica {
     public List<List<Hecho>> leerDataSetNoLeidos() {
         List<FuenteEstatica> fuentesNoLeidas = this.findByNoLeidas();
         if(fuentesNoLeidas == null || fuentesNoLeidas.isEmpty()) {
-            throw new RuntimeException("No hay fuentes no leidas.");
+            return new ArrayList<>();
         }
         List<List<Hecho>> hechosTotales = new ArrayList<>();
         for (FuenteEstatica fuente : fuentesNoLeidas) {
@@ -127,7 +108,7 @@ public class ServiceFuenteEstatica {
     }
 
     @Transactional
-    @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void subirFuentesAlAgregador() {
         List<FuenteEstatica> fuentesNoLeidas = this.findByNoLeidas();
         if(fuentesNoLeidas == null || fuentesNoLeidas.isEmpty()) {

@@ -28,28 +28,24 @@ public class ControllerFuenteEstatica {
         return ResponseEntity.status(200).body(fe);
     }
 
-    @GetMapping("/{ruta}")
-    public ResponseEntity<List<Hecho>> getHechosRuta(@PathVariable String ruta) {
-        List<Hecho> hechos = this.serviceEstatica.leerDataSet(ruta);
-        if( hechos == null || hechos.isEmpty()){
-            return ResponseEntity.status(204).body(new ArrayList<>());
-        }
-        return ResponseEntity.status(200).body(hechos);
-    }
-
     @GetMapping("/hechos")
     public ResponseEntity<List<List<Hecho>>> getHechosNoLeidos() {
         List<List<Hecho>> hechos = this.serviceEstatica.leerDataSetNoLeidos();
         if( hechos == null || hechos.isEmpty()){
+            try {
+                serviceEstatica.subirFuentesAlAgregador();
+            }catch (Exception e){
+                throw new RuntimeException("Error al subir fuentes al agregador");
+            }
             return ResponseEntity.status(204).body(new ArrayList<>());
         }
         return ResponseEntity.status(200).body(hechos);
     }
 
-    @PatchMapping("/reprocesar/{fuente}")
+    @PostMapping("/reprocesar/{fuente}")
     public ResponseEntity<String> reprocesarFuente(@PathVariable String fuente) {
         this.serviceEstatica.reprocesarFuente(fuente);
-        return ResponseEntity.status(204).body(null);
+        return ResponseEntity.status(204).body("OK");
     }
 
 }
