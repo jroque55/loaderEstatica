@@ -32,11 +32,6 @@ public class ControllerFuenteEstatica {
     public ResponseEntity<List<List<Hecho>>> getHechosNoLeidos() {
         List<List<Hecho>> hechos = this.serviceEstatica.leerDataSetNoLeidos();
         if( hechos == null || hechos.isEmpty()){
-            try {
-                serviceEstatica.subirFuentesAlAgregador();
-            }catch (Exception e){
-                throw new RuntimeException("Error al subir fuentes al agregador");
-            }
             return ResponseEntity.status(204).body(new ArrayList<>());
         }
         return ResponseEntity.status(200).body(hechos);

@@ -108,7 +108,7 @@ public class ServiceFuenteEstatica {
     }
 
     @Transactional
-    //@Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void subirFuentesAlAgregador() {
         List<FuenteEstatica> fuentesNoLeidas = this.findByNoLeidas();
         if(fuentesNoLeidas == null || fuentesNoLeidas.isEmpty()) {
