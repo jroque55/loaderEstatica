@@ -2,6 +2,7 @@ package org.example.config;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -21,14 +22,20 @@ import java.util.HashMap;
 @EnableJpaRepositories(
         entityManagerFactoryRef = "agregadorEntityManagerFactory",
         transactionManagerRef = "agregadorTransactionManager",
-        basePackages = {"org.example.models.repository.repoAgregador"} // <-- ¡Paquete del Repositorio 2!
+        basePackages = "org.example.models.repository.repoAgregador" // <-- ¡Paquete del Repositorio 2!
 )
 public class AgregadorDBConfig {
 
-    @Bean(name = "agregadorDataSource")
-    @ConfigurationProperties(prefix = "db2.datasource") // Lee desde application.properties
-    public DataSource dataSource() {
-        return DataSourceBuilder.create().build();
+    @Bean
+    @ConfigurationProperties(prefix = "db2.datasource")
+    public DataSourceProperties agregadorDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+    @Bean
+    public DataSource agregadorDataSource() {
+        return agregadorDataSourceProperties()
+                .initializeDataSourceBuilder()
+                .build();
     }
 
     @Bean(name = "agregadorEntityManagerFactory")
