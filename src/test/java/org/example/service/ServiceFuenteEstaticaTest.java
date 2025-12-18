@@ -74,9 +74,6 @@ public class ServiceFuenteEstaticaTest {
 
         assertEquals("Error en la lectura del archivo: " + ruta, exception.getMessage());
 
-        // IMPORTANTE: El estado NO debe cambiar a PROCESADO si falla la lectura
-        // (Aunque el objeto en memoria podría haber cambiado si la línea setEstado está antes,
-        //  pero en tu código está DESPUÉS de obtenerHechos, lo cual es CORRECTO).
         assertEquals(EstadoProcesado.NO_PROCESADO, fuenteMock.getEstadoProcesado());
     }
 

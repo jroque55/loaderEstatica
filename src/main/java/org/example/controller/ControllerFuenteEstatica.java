@@ -5,8 +5,10 @@ import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.hecho.Hecho;
 import org.example.service.ServiceFuenteEstatica;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,23 @@ public class ControllerFuenteEstatica {
     public ResponseEntity<List<FuenteEstatica>> findByLeidas(){
         List<FuenteEstatica> fe = this.serviceEstatica.findByLeidas();
         return ResponseEntity.status(200).body(fe);
+    }
+
+    @PostMapping(value = "/subirDataSet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<String> subirArchivo(
+             @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("El archivo está vacío");
+        }
+        try {
+            Boolean valor = serviceEstatica.subirDataSet(file);
+            if (!valor){
+                return ResponseEntity.internalServerError().body("Ese tipo de archivo no es soportado");
+            }
+            return ResponseEntity.ok("Archivo subido exitosamente: " + file.getOriginalFilename());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al subir el archivo: " + e.getMessage());
+        }
     }
 
     @GetMapping("/hechos")

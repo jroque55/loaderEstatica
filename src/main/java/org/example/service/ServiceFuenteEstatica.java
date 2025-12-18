@@ -13,9 +13,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.String;
@@ -35,6 +39,32 @@ public class ServiceFuenteEstatica {
         this.lectorCSV = lectorCSV;
         this.repositoryFuenteEstatica = repositoryFuenteEstatica;
         this.repositoryAgregador = repositoryAgregador;
+    }
+
+    public Boolean subirDataSet(MultipartFile file) throws IOException {
+        Path rootLocation = Paths.get(this.urlFile);
+
+        if (!Files.exists(rootLocation)) {
+            Files.createDirectories(rootLocation);
+        }
+        Path destinationFile = rootLocation.resolve(
+                        Paths.get(file.getOriginalFilename()))
+                .normalize().toAbsolutePath();
+
+        if (!destinationFile.getParent().equals(rootLocation.toAbsolutePath())) {
+            throw new IOException("No se puede guardar el archivo fuera del directorio configurado.");
+        }
+        if(!destinationFile.endsWith(".csv") || !destinationFile.endsWith(".pdf")){
+            System.out.println("Ese tipo de archivo no corresponde a un dataset");
+            return false;
+        }
+
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Archivo guardado físicamente en: " + destinationFile);
+            return true;
+        }
+
     }
 
     @Transactional
