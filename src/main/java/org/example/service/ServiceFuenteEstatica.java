@@ -1,5 +1,7 @@
 package org.example.service;
 
+import org.example.models.dtos.FuenteDto;
+import org.example.models.dtos.FuenteEstaticaDTO;
 import org.example.models.entities.fuente.Fuente;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.fuenteEstatica.LectorCSV;
@@ -40,6 +42,22 @@ public class ServiceFuenteEstatica {
         this.repositoryFuenteEstatica = repositoryFuenteEstatica;
         this.repositoryAgregador = repositoryAgregador;
     }
+
+    public List<FuenteEstaticaDTO> findAll() {
+        List<FuenteEstatica> fes = this.repositoryFuenteEstatica.findAll();
+        List<FuenteEstaticaDTO> fuenteDtos = pasarFuenteEstaticaDTO(fes);
+        return fuenteDtos;
+    }
+
+    private List<FuenteEstaticaDTO> pasarFuenteEstaticaDTO(List<FuenteEstatica> fes) {
+        List<FuenteEstaticaDTO> fuenteDtos = new ArrayList<>();
+        for (FuenteEstatica fe : fes) {
+            FuenteEstaticaDTO feDTO = new FuenteEstaticaDTO(fe);
+            fuenteDtos.add(feDTO);
+        }
+        return fuenteDtos;
+    }
+
 
     public Boolean subirDataSet(MultipartFile file) throws IOException {
         Path rootLocation = Paths.get(this.urlFile);

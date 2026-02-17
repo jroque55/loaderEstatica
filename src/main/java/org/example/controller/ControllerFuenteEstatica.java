@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import jakarta.websocket.server.PathParam;
+import org.example.models.dtos.FuenteEstaticaDTO;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.hecho.Hecho;
 import org.example.service.ServiceFuenteEstatica;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/estatica")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ControllerFuenteEstatica {
 
     @Autowired
@@ -24,9 +26,15 @@ public class ControllerFuenteEstatica {
         this.serviceEstatica = serviceEstatica;
     }
 
-    @GetMapping("/fuentes")
+    @GetMapping("/fuentesLeidas")
     public ResponseEntity<List<FuenteEstatica>> findByLeidas(){
         List<FuenteEstatica> fe = this.serviceEstatica.findByLeidas();
+        return ResponseEntity.status(200).body(fe);
+    }
+
+    @GetMapping("/fuentes")
+    public ResponseEntity<List<FuenteEstaticaDTO>> findAll() {
+        List<FuenteEstaticaDTO> fe = this.serviceEstatica.findAll();
         return ResponseEntity.status(200).body(fe);
     }
 
