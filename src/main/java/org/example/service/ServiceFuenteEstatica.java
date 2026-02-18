@@ -1,5 +1,8 @@
 package org.example.service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.example.models.dtos.FuenteDto;
+import org.example.models.dtos.FuenteEstaticaDTO;
 import org.example.models.entities.fuente.Fuente;
 import org.example.models.entities.fuenteEstatica.FuenteEstatica;
 import org.example.models.entities.fuenteEstatica.LectorCSV;
@@ -26,6 +29,7 @@ import java.lang.String;
 import java.util.stream.Stream;
 import java.nio.file.Paths;
 
+@Slf4j
 @Service
 public class ServiceFuenteEstatica {
 
@@ -41,7 +45,31 @@ public class ServiceFuenteEstatica {
         this.repositoryAgregador = repositoryAgregador;
     }
 
+    public List<FuenteEstaticaDTO> findAll() {
+        log.info("Obteniendo todas las fuentes estáticas");
+        List<FuenteEstatica> fes = this.repositoryFuenteEstatica.findAll();
+        if (fes == null || fes.isEmpty()) {
+            log.debug("No se encontraron fuentes estáticas");
+            return new ArrayList<>();
+        }
+        log.debug("Fuentes estáticas obtenidas: {}", fes.size());
+        List<FuenteEstaticaDTO> fuenteDtos = pasarFuenteEstaticaDTO(fes);
+        return fuenteDtos;
+    }
+
+    private List<FuenteEstaticaDTO> pasarFuenteEstaticaDTO(List<FuenteEstatica> fes) {
+        log.debug("Convirtiendo {} de FuenteEstatica a DTO", fes.size());
+        List<FuenteEstaticaDTO> fuenteDtos = new ArrayList<>();
+        for (FuenteEstatica fe : fes) {
+            FuenteEstaticaDTO feDTO = new FuenteEstaticaDTO(fe);
+            fuenteDtos.add(feDTO);
+        }
+        return fuenteDtos;
+    }
+
+
     public Boolean subirDataSet(MultipartFile file) throws IOException {
+
         Path rootLocation = Paths.get(this.urlFile);
 
         if (!Files.exists(rootLocation)) {
@@ -70,8 +98,10 @@ public class ServiceFuenteEstatica {
     @Transactional
     public List<Hecho> leerDataSet(FuenteEstatica fuenteEstatica){
         seleccionarLectorAFuente(fuenteEstatica);
+        log.info("Leyendo dataset de la fuente: {}", fuenteEstatica.getRutaDataset());
         List<Hecho> hechos = fuenteEstatica.obtenerHechos();
         fuenteEstatica.setEstadoProcesado(EstadoProcesado.PROCESADO);
+        log.info("Hechos obtenidos: {}. Marcando fuente como procesada.", hechos.size());
         this.repositoryFuenteEstatica.save(fuenteEstatica);
         return hechos;
     }
@@ -84,20 +114,19 @@ public class ServiceFuenteEstatica {
             throw new RuntimeException("Error: La ruta especificada no es un directorio válido.");
         }
         try (Stream<Path> stream = Files.list(dirPath)) {
-
-            System.out.println("--- Archivos en el directorio: " + this.urlFile + " ---");
+            log.info("Buscando nuevas fuentes en el directorio: {}", this.urlFile);
             List<String> archivos = stream.filter(Files::isRegularFile)
                     .map(Path::getFileName).map(Path::toString).toList();
             for(String archivo : archivos){
+                log.info("Archivo encontrado: {}", archivo);
                 FuenteEstatica fe = this.repositoryFuenteEstatica.findByRutaDataset(archivo);
                 if(fe == null) {
+                    log.info("Agreando nueva fuente estática {}", archivo);
                     fe = new FuenteEstatica(archivo);
                     fe.setEstadoProcesado(EstadoProcesado.NO_PROCESADO);
                     repositoryFuenteEstatica.save(fe);
-                    System.out.println("Nueva fuente estatica agregada: " + archivo);
                 }
             }
-
         } catch (IOException e) {
             System.err.println("Error al leer el directorio: " + e.getMessage());
         }
@@ -117,9 +146,10 @@ public class ServiceFuenteEstatica {
         if(fuentesNoLeidas == null || fuentesNoLeidas.isEmpty()) {
             return new ArrayList<>();
         }
+        log.debug("Fuentes no leídas encontradas: {}", fuentesNoLeidas.size());
         List<List<Hecho>> hechosTotales = new ArrayList<>();
         for (FuenteEstatica fuente : fuentesNoLeidas) {
-            System.out.println("Leyendo fuente no leida: " + fuente.getRutaDataset());
+            log.info("Procesando fuente no leída: {}", fuente.getRutaDataset());
             List<Hecho> hechos = this.leerDataSet(fuente);
             hechosTotales.add(hechos);
         }
@@ -134,27 +164,27 @@ public class ServiceFuenteEstatica {
         }
         fuente.setEstadoProcesado(EstadoProcesado.NO_PROCESADO);
         this.repositoryFuenteEstatica.save(fuente);
-        System.out.println("La ruta se marco como no procesada: " + ruta);
     }
 
     @Transactional
     @Scheduled(fixedRate = 10000000)
     public void subirFuentesAlAgregador() {
+        log.info("Iniciando proceso de subir fuentes no leídas al agregador");
         List<FuenteEstatica> fuentesNoLeidas = this.findByNoLeidas();
         if(fuentesNoLeidas == null || fuentesNoLeidas.isEmpty()) {
             throw new RuntimeException("No hay fuentes no leidas para subir al agregador.");
         }
         for (FuenteEstatica fuente : fuentesNoLeidas) {
+            log.debug("Subiendo nueva fuente estática al agregador: {}", fuente.getRutaDataset());
             Fuente esNueva = this.repositoryAgregador.findByUrl(fuente.getRutaDataset());
             if(esNueva == null) {
                 Fuente f = new Fuente();
                 f.setNombre(fuente.getNombre());
                 f.setTipoFuente(EnumTipoFuente.ESTATICA);
                 f.setUrl(fuente.getRutaDataset());
-                System.out.println("Nueva fuente: " + f.getUrl() );
                 this.repositoryAgregador.save(f);
             }else {
-                System.out.println("Fuente existe, no se agrego: "+ esNueva.getUrl() );
+                log.warn("Esta fuente ya existe en el agregador, no se subirá nuevamente: {}", fuente.getRutaDataset());
             }
         }
     }
