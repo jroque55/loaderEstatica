@@ -26,7 +26,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/estatica")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://front-metamapa-lo3l.vercel.app/")
 public class ControllerFuenteEstatica {
 
     @Autowired
