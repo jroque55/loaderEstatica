@@ -26,7 +26,8 @@ public class CorsConfig {
                 "https://front-metamapa-lo3l.vercel.app",
                 "https://front-metamapa.vercel.app",
                 "http://localhost:3000",
-                "https://front-metamapa-dun.vercel.app"
+                "https://front-metamapa-dun.vercel.app",
+                "https://front-metamapa2.vercel.app"
         ));
 
         // 3. Cabeceras y métodos permitidos (OPTIONS es obligatorio)
